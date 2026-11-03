@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}CPU{% endblock %}
+
+{% block head %}
+  <meta http-equiv="refresh" content="5">
+{% endblock %}
+
+{% block content %}
+  <article class="panel">
+    <h1>CPU</h1>
+    {% if server %}
+      <p class="lede">{{ server.name }} · {{ server.host }}</p>
+    {% else %}
+      <p class="lede">This machine</p>
+    {% endif %}
+    {% if sample is none %}
+      <p class="error" role="alert">CPU reading failed.</p>
+    {% else %}
+      <p class="cpu-overall">{{ "%.1f"|format(sample.overall) }}%</p>
+      <p class="lede">Overall</p>
+      {% for core in sample.cores %}
+        <div class="core">
+          <span>Core {{ loop.index }}</span>
+          <div class="bar" aria-hidden="true">
+            <span style="width: {{ [core, 100]|min if core > 0 else 0 }}%"></span>
+          </div>
+          <span>{{ "%.1f"|format(core) }}%</span>
+        </div>
+      {% endfor %}
+    {% endif %}
+  </article>
+{% endblock %}

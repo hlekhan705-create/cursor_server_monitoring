@@ -4,23 +4,22 @@
 
 {% block content %}
   <h1>Servers</h1>
-  <p class="lede">This demo lists the local machine. Live CPU is not connected yet.</p>
+  <p class="lede">Names come from the config file. CPU is read on this machine.</p>
   <section class="cards" aria-label="Servers">
-    <article class="card">
-      <div class="card-head">
-        <h2>This server</h2>
-        <span class="pill">Local</span>
-      </div>
-      <dl>
-        <div>
-          <dt>Host</dt>
-          <dd>localhost</dd>
+    {% for server in servers %}
+      <article class="card">
+        <div class="card-head">
+          <h2>{{ server.name }}</h2>
+          <span class="pill">Local</span>
         </div>
-        <div>
-          <dt>CPU</dt>
-          <dd>Not available yet</dd>
-        </div>
-      </dl>
-    </article>
+        <dl>
+          <div>
+            <dt>Host</dt>
+            <dd>{{ server.host }}</dd>
+          </div>
+        </dl>
+        <a class="cpu-link" href="{{ url_for('cpu', server_id=server.id) }}">CPU</a>
+      </article>
+    {% endfor %}
   </section>
 {% endblock %}

@@ -116,6 +116,20 @@ input {
   font: inherit;
 }
 
+input:focus {
+  outline: none;
+  border-color: var(--teal);
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.18);
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--ink);
+  caret-color: var(--ink);
+  box-shadow: 0 0 0 1000px #ffffff inset;
+  transition: background-color 9999s ease-out;
+}
+
 .login-card button[type="submit"] {
   justify-self: start;
   margin-top: 4px;
@@ -183,6 +197,42 @@ dt {
 dd {
   margin: 2px 0 0;
   font-size: 18px;
+}
+
+.cpu-link {
+  display: inline-block;
+  margin-top: 16px;
+  color: var(--teal);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.cpu-overall {
+  margin: 0;
+  font-size: 40px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.core {
+  display: grid;
+  grid-template-columns: 72px 1fr 56px;
+  gap: 12px;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.bar {
+  height: 10px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e7e2d8;
+}
+
+.bar span {
+  display: block;
+  height: 100%;
+  background: var(--teal);
 }
 
 @media (max-width: 640px) {
