@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Server monitoring{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  </head>
+  <body>
+    <header class="navbar">
+      <span class="brand">Server monitoring</span>
+      <nav aria-label="Primary">
+        <a href="{{ url_for('sign_in') }}" {% if request.endpoint == "sign_in" %}aria-current="page"{% endif %}>Sign in</a>
+        <a href="{{ url_for('servers') }}" {% if request.endpoint == "servers" %}aria-current="page"{% endif %}>Servers</a>
+        <a href="{{ url_for('metrics') }}" {% if request.endpoint == "metrics" %}aria-current="page"{% endif %}>Metrics</a>
+        {% if session.get("user") %}
+          <form method="post" action="{{ url_for('sign_out') }}">
+            <button type="submit">Sign out</button>
+          </form>
+        {% endif %}
+      </nav>
+    </header>
+    <main>
+      {% block content %}{% endblock %}
+    </main>
+  </body>
+</html>

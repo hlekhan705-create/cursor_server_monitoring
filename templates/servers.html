@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Servers{% endblock %}
+
+{% block content %}
+  <h1>Servers</h1>
+  <p class="lede">This demo lists the local machine. Live CPU is not connected yet.</p>
+  <section class="cards" aria-label="Servers">
+    <article class="card">
+      <div class="card-head">
+        <h2>This server</h2>
+        <span class="pill">Local</span>
+      </div>
+      <dl>
+        <div>
+          <dt>Host</dt>
+          <dd>localhost</dd>
+        </div>
+        <div>
+          <dt>CPU</dt>
+          <dd>Not available yet</dd>
+        </div>
+      </dl>
+    </article>
+  </section>
+{% endblock %}
