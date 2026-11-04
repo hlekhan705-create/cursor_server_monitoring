@@ -2,24 +2,74 @@
 
 {% block title %}Servers{% endblock %}
 
+{% block body_class %}servers-page{% endblock %}
+
+{% block head %}
+  <meta http-equiv="refresh" content="15">
+{% endblock %}
+
 {% block content %}
-  <h1>Servers</h1>
-  <p class="lede">Names come from the config file. CPU is read on this machine.</p>
-  <section class="cards" aria-label="Servers">
-    {% for server in servers %}
-      <article class="card">
-        <div class="card-head">
-          <h2>{{ server.name }}</h2>
-          <span class="pill">Local</span>
-        </div>
-        <dl>
-          <div>
-            <dt>Host</dt>
-            <dd>{{ server.host }}</dd>
-          </div>
-        </dl>
-        <a class="cpu-link" href="{{ url_for('cpu', server_id=server.id) }}">CPU</a>
-      </article>
-    {% endfor %}
+  <div class="page-head">
+    <div>
+      <h1>Servers</h1>
+      <p class="lede">Current readings refresh every 15 seconds. Remove drops a server from this list.</p>
+    </div>
+    <button class="add-button" type="submit" form="add-server">Add server</button>
+  </div>
+  <section class="server-card">
+    <h2>Monitored Linux servers</h2>
+    {% if error %}
+      <p class="error" role="alert">{{ error }}</p>
+    {% endif %}
+    <form id="add-server" class="add-row" method="post" action="{{ url_for('add_server_view') }}">
+      <input name="name" aria-label="Name" placeholder="Name" maxlength="80" required>
+      <input name="host" aria-label="Host" placeholder="Host" maxlength="253" required>
+    </form>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Host</th>
+            <th>Status</th>
+            <th>CPU</th>
+            <th>Memory</th>
+            <th>Fullest disk</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for server in servers %}
+            <tr>
+              <td data-label="Name">
+                <a class="server-link" href="{{ url_for('cpu', server_id=server.id) }}">{{ server.name }}</a>
+              </td>
+              <td data-label="Host">{{ server.host }}{% if server.port %}:{{ server.port }}{% endif %}</td>
+              <td data-label="Status">
+                {% if server.reading.online %}
+                  <span class="badge">online</span>
+                {% else %}
+                  <span class="badge badge-offline">offline</span>
+                {% endif %}
+              </td>
+              <td data-label="CPU">
+                {% if server.reading.online %}{{ "%.1f"|format(server.reading.cpu) }}%{% else %}—{% endif %}
+              </td>
+              <td data-label="Memory">
+                {% if server.reading.online %}{{ "%.1f"|format(server.reading.memory) }}%{% else %}—{% endif %}
+              </td>
+              <td data-label="Fullest disk">
+                {% if server.reading.online %}{{ "%.1f"|format(server.reading.disk) }}% {{ server.reading.mount }}{% else %}—{% endif %}
+              </td>
+              <td data-label="Action">
+                <form class="remove-form" method="post" action="{{ url_for('remove_server_view', server_id=server.id) }}">
+                  <button class="remove-button" type="submit">Remove</button>
+                </form>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </section>
 {% endblock %}

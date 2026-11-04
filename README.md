@@ -26,3 +26,6 @@ python app.py
 Open http://127.0.0.1:5000
 
 The app listens on 127.0.0.1 only. Stop it with Ctrl+C.
+
+## Development
+Development changes are made on the dev branch and merged into main through pull requests.

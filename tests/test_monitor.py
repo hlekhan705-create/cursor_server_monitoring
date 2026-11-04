@@ -19,6 +19,9 @@ class MonitorTests(unittest.TestCase):
         importlib.reload(app_module)
         self.app_module = app_module
         self.client = app_module.app.test_client()
+        self.client.application.config["REMOTE_READER"] = (
+            lambda *args, **kwargs: self.app_module.empty_reading()
+        )
 
     def tearDown(self):
         self.tmpdir.cleanup()
@@ -61,17 +64,70 @@ class MonitorTests(unittest.TestCase):
             self.app_module.load_servers(path)
         self.assertIn("not valid JSON", str(raised.exception))
 
-    def test_server_page_is_read_only(self):
+    def test_server_page_shows_the_lab_table(self):
         self.sign_in()
+        self.client.application.config["HOST_READER"] = lambda: {
+            "online": True,
+            "cpu": 12.5,
+            "memory": 40.0,
+            "disk": 55.0,
+            "mount": "/",
+        }
         page = self.client.get("/servers")
         html = page.get_data(as_text=True)
         self.assertEqual(page.status_code, 200)
+        self.assertIn("Monitored Linux servers", html)
+        self.assertIn("Current readings refresh every 15 seconds", html)
         self.assertIn("This server", html)
         self.assertIn("localhost", html)
+        self.assertIn("online", html)
+        self.assertIn("12.5%", html)
+        self.assertIn("40.0%", html)
+        self.assertIn("55.0%", html)
+        self.assertIn("Add server", html)
+        self.assertIn("Remove", html)
         self.assertIn("/cpu", html)
-        self.assertNotIn("Add server", html)
-        self.assertNotIn(">Edit<", html)
+        self.assertIn('content="15"', html)
         self.assertNotIn(">Delete<", html)
+        self.assertNotIn("<h1>CPU</h1>", html)
+
+    def test_add_and_remove_server(self):
+        path = os.path.join(self.tmpdir.name, "servers.json")
+        with open(path, "w", encoding="utf-8") as handle:
+            json.dump([{"name": "This server", "host": "localhost"}], handle)
+        self.client.application.config["SERVERS_PATH"] = path
+        self.client.application.config["HOST_READER"] = lambda: {
+            "online": True,
+            "cpu": 1.0,
+            "memory": 2.0,
+            "disk": 3.0,
+            "mount": "/",
+        }
+        self.app_module.replace_servers(
+            self.db_path, self.app_module.load_servers(path)
+        )
+        self.sign_in()
+        added = self.client.post(
+            "/servers",
+            data={"name": "Lab host", "host": "lab.example"},
+            follow_redirects=True,
+        )
+        self.assertIn("Lab host", added.get_data(as_text=True))
+        with sqlite3.connect(self.db_path) as conn:
+            server_id = conn.execute(
+                "SELECT id FROM servers WHERE name = ?",
+                ("Lab host",),
+            ).fetchone()[0]
+        removed = self.client.post(
+            f"/servers/{server_id}/remove",
+            follow_redirects=True,
+        )
+        self.assertNotIn("Lab host", removed.get_data(as_text=True))
+        listed = [
+            (item["name"], item["host"])
+            for item in self.app_module.load_servers(path)
+        ]
+        self.assertNotIn(("Lab host", "lab.example"), listed)
 
     def test_cpu_success_and_failure_leave_the_database_unchanged(self):
         calls = []
@@ -117,6 +173,59 @@ class MonitorTests(unittest.TestCase):
         self.assertIn('http-equiv="refresh" content="5"', html)
         self.assertNotIn("<form", html.split("</nav>", 1)[-1])
 
+    def test_remote_server_shows_its_own_readings(self):
+        path = os.path.join(self.tmpdir.name, "servers.json")
+        with open(path, "w", encoding="utf-8") as handle:
+            json.dump(
+                [
+                    {"name": "This server", "host": "localhost"},
+                    {
+                        "name": "Monitoring_server",
+                        "host": "20.235.34.15",
+                        "port": 22,
+                        "username": "lekhanh",
+                    },
+                ],
+                handle,
+            )
+        self.client.application.config["SERVERS_PATH"] = path
+        self.app_module.replace_servers(
+            self.db_path, self.app_module.load_servers(path)
+        )
+        self.client.application.config["HOST_READER"] = lambda: {
+            "online": True,
+            "cpu": 1.0,
+            "memory": 2.0,
+            "disk": 3.0,
+            "mount": "/",
+        }
+        self.client.application.config["REMOTE_READER"] = (
+            lambda host, port, username, identity: {
+                "online": True,
+                "cpu": 21.5,
+                "memory": 47.0,
+                "disk": 40.0,
+                "mount": "/",
+            }
+        )
+        self.sign_in()
+        html = self.client.get("/servers").get_data(as_text=True)
+        self.assertIn("Monitoring_server", html)
+        self.assertIn("20.235.34.15:22", html)
+        self.assertIn("21.5%", html)
+        self.assertIn("47.0%", html)
+        self.assertIn("1.0%", html)
+        self.assertNotIn("ssh", html.lower())
+
+    def test_remote_metric_text_parses(self):
+        reading = self.app_module.parse_remote_metrics(
+            "cpu 21.5\nmem 47.0\ndisk 40.0 /\n"
+        )
+        self.assertEqual(reading["cpu"], 21.5)
+        self.assertEqual(reading["memory"], 47.0)
+        self.assertEqual(reading["disk"], 40.0)
+        self.assertEqual(reading["mount"], "/")
+
     def test_cpu_page_requires_sign_in(self):
         response = self.client.get("/servers/1/cpu", follow_redirects=False)
         self.assertEqual(response.status_code, 302)
@@ -145,7 +254,14 @@ class MonitorTests(unittest.TestCase):
                 for row in conn.execute("SELECT name FROM servers ORDER BY id")
             ]
         self.assertEqual(stored, "pbkdf2:sha256:kept")
-        self.assertEqual(names, ["This server"])
+        expected = [
+            item["name"]
+            for item in self.app_module.load_servers(
+                self.app_module.app.config["SERVERS_PATH"]
+            )
+        ]
+        self.assertEqual(names, expected)
+        self.assertNotIn("Extra", names)
 
 
 if __name__ == "__main__":
