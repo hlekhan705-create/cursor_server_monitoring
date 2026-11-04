@@ -18,6 +18,9 @@ class AuthTests(unittest.TestCase):
         importlib.reload(app_module)
         self.app_module = app_module
         self.client = app_module.app.test_client()
+        self.client.application.config["REMOTE_READER"] = (
+            lambda *args, **kwargs: self.app_module.empty_reading()
+        )
 
     def tearDown(self):
         self.tmpdir.cleanup()

@@ -2,5 +2,11 @@
   {
     "name": "This server",
     "host": "localhost"
+  },
+  {
+    "name": "Monitoring_server",
+    "host": "20.235.34.15",
+    "port": 22,
+    "username": "lekhanh"
   }
 ]

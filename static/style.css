@@ -5,7 +5,7 @@
   --cream: #f4f1ea;
   --card: #ffffff;
   --teal: #0f766e;
-  --nav: #111111;
+  --nav: #0e4c5c;
 }
 
 * {
@@ -233,6 +233,158 @@ dd {
   display: block;
   height: 100%;
   background: var(--teal);
+}
+
+.servers-page {
+  background: #eef1f4;
+}
+
+.servers-page main {
+  width: min(1040px, calc(100% - 32px));
+  margin: 28px auto 64px;
+  padding: 0;
+}
+
+.page-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.page-head .lede {
+  margin: 0;
+}
+
+.add-button,
+.remove-button {
+  border: 0;
+  border-radius: 8px;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.add-button {
+  padding: 10px 16px;
+  color: #ffffff;
+  background: #0f5f63;
+  white-space: nowrap;
+}
+
+.server-card {
+  padding: 24px;
+  background: #ffffff;
+  border: 1px solid #e6e8eb;
+  border-radius: 16px;
+}
+
+.server-card h2 {
+  margin: 0 0 16px;
+}
+
+.add-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.add-row input {
+  flex: 1 1 180px;
+  margin: 0;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 12px 10px;
+  border-bottom: 1px solid #e6e8eb;
+  text-align: left;
+  vertical-align: middle;
+}
+
+th {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.server-link {
+  color: #17803d;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  color: #17663a;
+  background: #e5f6ec;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.badge-offline {
+  color: #7a3412;
+  background: #f8e7dc;
+}
+
+.remove-form {
+  display: inline;
+}
+
+.remove-button {
+  padding: 6px 10px;
+  color: #9f1239;
+  background: #fde8e8;
+}
+
+@media (max-width: 720px) {
+  .page-head {
+    flex-direction: column;
+  }
+
+  table,
+  thead,
+  tbody,
+  tr,
+  th,
+  td {
+    display: block;
+  }
+
+  thead {
+    display: none;
+  }
+
+  tr {
+    padding: 8px 0 12px;
+    border-bottom: 1px solid #e6e8eb;
+  }
+
+  td {
+    border: 0;
+    padding: 6px 0;
+  }
+
+  td::before {
+    content: attr(data-label);
+    display: block;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 700;
+  }
 }
 
 @media (max-width: 640px) {
